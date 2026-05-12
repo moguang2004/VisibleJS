@@ -44,7 +44,7 @@ public final class RecipeCreatorGeneratePacket {
             }
 
             if (!(player.containerMenu instanceof RecipeCreatorMenu menu)) {
-                player.sendSystemMessage(Component.literal("[VisibleJS] 请先打开 recipe_creator 界面再生成脚本。"));
+                player.sendSystemMessage(Component.literal("[VisibleJS] ").append(Component.translatable("message.visiblejs.open_gui_first")));
                 return;
             }
 
@@ -52,7 +52,7 @@ public final class RecipeCreatorGeneratePacket {
                 String script = RecipeScriptGenerator.generateRecipe(menu, message.recipeType);
                 String filename = getFilenameForType(message.recipeType);
                 
-                // 写入到 kubejs/server_scripts/下的对应文件
+                // Write to kubejs/server_scripts/
                 Path gameDir = FMLPaths.GAMEDIR.get();
                 Path scriptDir = gameDir.resolve("kubejs/server_scripts");
                 Files.createDirectories(scriptDir);
@@ -63,14 +63,15 @@ public final class RecipeCreatorGeneratePacket {
                 Files.writeString(scriptFile, content, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
                 
                 LOGGER.info("Generated KJS script:\n{}", script);
-                player.sendSystemMessage(Component.literal("[VisibleJS] 已生成 KJS 脚本" + (isNewFile ? "并新建" : "并追加到") + " kubejs/server_scripts/" + filename));
+                Component action = Component.translatable(isNewFile ? "message.visiblejs.new_file" : "message.visiblejs.appended");
+                player.sendSystemMessage(Component.literal("[VisibleJS] ").append(Component.translatable("message.visiblejs.generated", action, filename)));
                 for (String line : script.split("\\R")) {
                     player.sendSystemMessage(Component.literal(line));
                 }
             } catch (IllegalStateException exception) {
                 player.sendSystemMessage(Component.literal("[VisibleJS] " + exception.getMessage()));
             } catch (IOException exception) {
-                player.sendSystemMessage(Component.literal("[VisibleJS] 保存文件失败: " + exception.getMessage()));
+                player.sendSystemMessage(Component.literal("[VisibleJS] ").append(Component.translatable("message.visiblejs.save_failed", exception.getMessage())));
                 LOGGER.error("Failed to write KJS script to file", exception);
             }
         });

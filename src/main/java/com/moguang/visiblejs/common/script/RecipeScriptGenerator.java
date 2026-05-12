@@ -41,7 +41,7 @@ public final class RecipeScriptGenerator {
     public static String generateShapedRecipe(RecipeCreatorMenu menu) {
         ItemStack resultStack = menu.getResultStack();
         if (resultStack.isEmpty()) {
-            throw new IllegalStateException("请先在结果槽里放入输出物品");
+            throw new IllegalStateException("message.visiblejs.error.result_empty");
         }
 
         List<ItemStack> ingredients = menu.getIngredientStacks();
@@ -64,7 +64,7 @@ public final class RecipeScriptGenerator {
         }
 
         if (maxRow < 0) {
-            throw new IllegalStateException("请先在 3x3 网格里放入材料");
+            throw new IllegalStateException("message.visiblejs.error.ingredients_empty");
         }
 
         Map<String, Character> symbolByIngredient = new LinkedHashMap<>();
@@ -85,7 +85,7 @@ public final class RecipeScriptGenerator {
                 Character symbol = symbolByIngredient.get(ingredientKey);
                 if (symbol == null) {
                     if (nextSymbol > 'Z') {
-                        throw new IllegalStateException("当前脚本生成器最多支持 26 种不同材料");
+                        throw new IllegalStateException("message.visiblejs.error.too_many_ingredients");
                     }
                     symbol = nextSymbol++;
                     symbolByIngredient.put(ingredientKey, symbol);
@@ -125,12 +125,12 @@ public final class RecipeScriptGenerator {
     public static String generateShapelessRecipe(RecipeCreatorMenu menu) {
         ItemStack resultStack = menu.getResultStack();
         if (resultStack.isEmpty()) {
-            throw new IllegalStateException("请先在结果槽里放入输出物品");
+            throw new IllegalStateException("message.visiblejs.error.result_empty");
         }
 
         List<ItemStack> ingredients = menu.getShapelessIngredients();
         if (ingredients.isEmpty()) {
-            throw new IllegalStateException("请先在 3x3 网格里放入材料");
+            throw new IllegalStateException("message.visiblejs.error.ingredients_empty");
         }
 
         String resultExpression = buildResultExpression(resultStack);
@@ -155,12 +155,12 @@ public final class RecipeScriptGenerator {
     public static String generateCookingRecipe(RecipeCreatorMenu menu, String method) {
         ItemStack resultStack = menu.getResultStack();
         if (resultStack.isEmpty()) {
-            throw new IllegalStateException("请先在结果槽里放入输出物品");
+            throw new IllegalStateException("message.visiblejs.error.result_empty");
         }
 
         ItemStack ingredient = menu.getSingleIngredient();
         if (ingredient.isEmpty()) {
-            throw new IllegalStateException("请先在中间格子放入输入物品");
+            throw new IllegalStateException("message.visiblejs.error.center_empty");
         }
 
         String resultExpression = buildResultExpression(resultStack);
@@ -177,7 +177,7 @@ public final class RecipeScriptGenerator {
     public static String generateSmithingRecipe(RecipeCreatorMenu menu) {
         ItemStack resultStack = menu.getResultStack();
         if (resultStack.isEmpty()) {
-            throw new IllegalStateException("请先在结果槽里放入输出物品");
+            throw new IllegalStateException("message.visiblejs.error.result_empty");
         }
 
         ItemStack template = menu.getSmithingTemplate();
@@ -185,7 +185,7 @@ public final class RecipeScriptGenerator {
         ItemStack addition = menu.getSmithingAddition();
 
         if (template.isEmpty() || base.isEmpty() || addition.isEmpty()) {
-            throw new IllegalStateException("请在前三个格子分别放入模板、基础物品和附加物品");
+            throw new IllegalStateException("message.visiblejs.error.smithing_slots");
         }
 
         String resultExpression = buildResultExpression(resultStack);
@@ -205,12 +205,12 @@ public final class RecipeScriptGenerator {
     public static String generateStonecuttingRecipe(RecipeCreatorMenu menu) {
         ItemStack resultStack = menu.getResultStack();
         if (resultStack.isEmpty()) {
-            throw new IllegalStateException("请先在结果槽里放入输出物品");
+            throw new IllegalStateException("message.visiblejs.error.result_empty");
         }
 
         ItemStack ingredient = menu.getSingleIngredient();
         if (ingredient.isEmpty()) {
-            throw new IllegalStateException("请先在中间格子放入输入物品");
+            throw new IllegalStateException("message.visiblejs.error.center_empty");
         }
 
         String resultExpression = buildResultExpression(resultStack);
@@ -227,7 +227,7 @@ public final class RecipeScriptGenerator {
     private static String buildResultExpression(ItemStack stack) {
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (itemId == null) {
-            throw new IllegalStateException("无法解析结果物品的注册名");
+            throw new IllegalStateException("message.visiblejs.error.parse_result");
         }
         if (stack.getCount() > 1) {
             return "Item.of('" + itemId + "', " + stack.getCount() + ")";
@@ -238,7 +238,7 @@ public final class RecipeScriptGenerator {
     private static String buildIngredientExpression(ItemStack stack) {
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (itemId == null) {
-            throw new IllegalStateException("无法解析材料物品的注册名");
+            throw new IllegalStateException("message.visiblejs.error.parse_ingredient");
         }
         return "'" + itemId + "'";
     }
@@ -246,7 +246,7 @@ public final class RecipeScriptGenerator {
     private static String getIngredientKey(ItemStack stack) {
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (itemId == null) {
-            throw new IllegalStateException("无法解析材料物品的注册名");
+            throw new IllegalStateException("message.visiblejs.error.parse_ingredient");
         }
         return itemId.toString();
     }

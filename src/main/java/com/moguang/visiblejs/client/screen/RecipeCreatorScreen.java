@@ -53,7 +53,7 @@ public class RecipeCreatorScreen extends AbstractContainerScreen<RecipeCreatorMe
         super.init();
 
         // Previous type button
-        this.addRenderableWidget(Button.builder(Component.literal("<"), button -> {
+        this.addRenderableWidget(Button.builder(Component.translatable("gui.visiblejs.recipe_creator.prev"), button -> {
                     this.menu.cycleRecipeType(false);
                     updateSlotPositions();
                 })
@@ -61,7 +61,7 @@ public class RecipeCreatorScreen extends AbstractContainerScreen<RecipeCreatorMe
                 .build());
 
         // Next type button
-        this.addRenderableWidget(Button.builder(Component.literal(">"), button -> {
+        this.addRenderableWidget(Button.builder(Component.translatable("gui.visiblejs.recipe_creator.next"), button -> {
                     this.menu.cycleRecipeType(true);
                     updateSlotPositions();
                 })
@@ -69,7 +69,7 @@ public class RecipeCreatorScreen extends AbstractContainerScreen<RecipeCreatorMe
                 .build());
 
         // Generate button
-        this.addRenderableWidget(Button.builder(Component.literal("生成脚本"), button -> VisibleJSNetwork.sendGenerateRecipeRequest(this.menu.getRecipeType()))
+        this.addRenderableWidget(Button.builder(Component.translatable("gui.visiblejs.recipe_creator.generate"), button -> VisibleJSNetwork.sendGenerateRecipeRequest(this.menu.getRecipeType()))
                 .bounds(this.leftPos + 98, this.topPos + 59, 64, 20)
                 .build());
         
@@ -190,7 +190,7 @@ public class RecipeCreatorScreen extends AbstractContainerScreen<RecipeCreatorMe
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         RecipeType type = this.menu.getRecipeType();
-        String typeName = type.getDisplayName();
+        Component typeName = type.getDisplayComponent();
         int textWidth = this.font.width(typeName);
         int textX = (this.imageWidth - textWidth) / 2;
         graphics.drawString(this.font, typeName, textX, 6, 0x404040, false);

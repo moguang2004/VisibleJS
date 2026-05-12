@@ -1,6 +1,27 @@
 {
   "item.visiblejs.recipe_creator": "Recipe Creator",
   "container.visiblejs.recipe_creator": "Recipe Creator",
-  "gui.visiblejs.recipe_creator.generate": "Generate Script"
+  "gui.visiblejs.recipe_creator.generate": "Generate Script",
+  "gui.visiblejs.recipe_creator.prev": "<",
+  "gui.visiblejs.recipe_creator.next": ">",
+  "recipe_type.visiblejs.shaped": "Shaped Crafting",
+  "recipe_type.visiblejs.shapeless": "Shapeless Crafting",
+  "recipe_type.visiblejs.smelting": "Smelting",
+  "recipe_type.visiblejs.blasting": "Blasting",
+  "recipe_type.visiblejs.smoking": "Smoking",
+  "recipe_type.visiblejs.campfire_cooking": "Campfire Cooking",
+  "recipe_type.visiblejs.smithing": "Smithing",
+  "recipe_type.visiblejs.stonecutting": "Stonecutting",
+  "message.visiblejs.open_gui_first": "Please open the recipe creator GUI first before generating scripts.",
+  "message.visiblejs.generated": "Generated KJS script %s kubejs/server_scripts/%s",
+  "message.visiblejs.new_file": "and created new file",
+  "message.visiblejs.appended": "and appended to",
+  "message.visiblejs.save_failed": "Failed to save file: %s",
+  "message.visiblejs.error.result_empty": "Please place the output item in the result slot first",
+  "message.visiblejs.error.ingredients_empty": "Please place materials in the 3x3 grid first",
+  "message.visiblejs.error.center_empty": "Please place the input item in the center slot first",
+  "message.visiblejs.error.smithing_slots": "Please place template, base item and addition item in the first three slots",
+  "message.visiblejs.error.too_many_ingredients": "The script generator supports up to 26 different materials",
+  "message.visiblejs.error.parse_result": "Unable to parse result item registry name",
+  "message.visiblejs.error.parse_ingredient": "Unable to parse ingredient item registry name"
 }
-

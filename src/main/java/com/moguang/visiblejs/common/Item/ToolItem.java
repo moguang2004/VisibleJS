@@ -15,7 +15,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 public class ToolItem extends Item {
-    private static final Component CONTAINER_TITLE = Component.literal("配方生成器");
+    private static final Component CONTAINER_TITLE = Component.translatable("container.visiblejs.recipe_creator");
 
     public ToolItem(Properties p_41383_) {
         super(p_41383_);
