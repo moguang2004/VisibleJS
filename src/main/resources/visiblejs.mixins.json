@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.moguang.visiblejs.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "visiblejs.refmap.json",
+  "mixins": [
+    "accessor.SlotAccessor"
+  ],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
+

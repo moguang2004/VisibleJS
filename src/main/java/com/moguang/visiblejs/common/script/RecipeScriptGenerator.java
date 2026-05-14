@@ -33,6 +33,30 @@ public final class RecipeScriptGenerator {
                 return generateSmithingRecipe(menu);
             case STONECUTTING:
                 return generateStonecuttingRecipe(menu);
+            case CREATE_CRUSHING:
+                return generateCreateSingleInputRecipe(menu, "crushing");
+            case CREATE_MILLING:
+                return generateCreateSingleInputRecipe(menu, "milling");
+            case CREATE_PRESSING:
+                return generateCreateSingleInputRecipe(menu, "pressing");
+            case CREATE_CUTTING:
+                return generateCreateSingleInputRecipe(menu, "cutting");
+            case CREATE_SANDPAPER_POLISHING:
+                return generateCreateSingleInputRecipe(menu, "sandpaper_polishing");
+            case CREATE_HAUNTING:
+                return generateCreateSingleInputRecipe(menu, "haunting");
+            case CREATE_SPLASHING:
+                return generateCreateSingleInputRecipe(menu, "splashing");
+            case CREATE_EMPTYING:
+                return generateCreateSingleInputRecipe(menu, "emptying");
+            case CREATE_WASHING:
+                return generateCreateSingleInputRecipe(menu, "washing");
+            case CREATE_DEPLOYING:
+                return generateCreateDeployingRecipe(menu);
+            case CREATE_MIXING:
+                return generateCreateMultiInputRecipe(menu, "mixing");
+            case CREATE_COMPACTING:
+                return generateCreateMultiInputRecipe(menu, "compacting");
             default:
                 return generateShapedRecipe(menu);
         }
@@ -224,6 +248,53 @@ public final class RecipeScriptGenerator {
         return script.toString();
     }
 
+    public static String generateCreateSingleInputRecipe(RecipeCreatorMenu menu, String method) {
+        ItemStack resultStack = menu.getResultStack();
+        if (resultStack.isEmpty()) {
+            throw new IllegalStateException("message.visiblejs.error.result_empty");
+        }
+
+        ItemStack ingredient = menu.getSingleIngredient();
+        if (ingredient.isEmpty()) {
+            throw new IllegalStateException("message.visiblejs.error.center_empty");
+        }
+
+        return RecipeScriptPreview.createSingleInputRecipe(method, toItemId(resultStack), resultStack.getCount(), toItemId(ingredient));
+    }
+
+    public static String generateCreateDeployingRecipe(RecipeCreatorMenu menu) {
+        ItemStack resultStack = menu.getResultStack();
+        if (resultStack.isEmpty()) {
+            throw new IllegalStateException("message.visiblejs.error.result_empty");
+        }
+
+        ItemStack first = menu.getSmithingBase();
+        ItemStack second = menu.getSmithingAddition();
+        if (first.isEmpty() || second.isEmpty()) {
+            throw new IllegalStateException("message.visiblejs.error.center_empty");
+        }
+
+        return RecipeScriptPreview.createDualInputRecipe("deploying", toItemId(resultStack), resultStack.getCount(), toItemId(first), toItemId(second));
+    }
+
+    public static String generateCreateMultiInputRecipe(RecipeCreatorMenu menu, String method) {
+        ItemStack resultStack = menu.getResultStack();
+        if (resultStack.isEmpty()) {
+            throw new IllegalStateException("message.visiblejs.error.result_empty");
+        }
+
+        List<ItemStack> ingredients = menu.getShapelessIngredients();
+        if (ingredients.isEmpty()) {
+            throw new IllegalStateException("message.visiblejs.error.ingredients_empty");
+        }
+
+        List<String> ingredientIds = new ArrayList<>(ingredients.size());
+        for (ItemStack stack : ingredients) {
+            ingredientIds.add(toItemId(stack));
+        }
+        return RecipeScriptPreview.createMultiInputRecipe(method, toItemId(resultStack), resultStack.getCount(), ingredientIds);
+    }
+
     private static String buildResultExpression(ItemStack stack) {
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (itemId == null) {
@@ -244,6 +315,14 @@ public final class RecipeScriptGenerator {
     }
 
     private static String getIngredientKey(ItemStack stack) {
+        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        if (itemId == null) {
+            throw new IllegalStateException("message.visiblejs.error.parse_ingredient");
+        }
+        return itemId.toString();
+    }
+
+    private static String toItemId(ItemStack stack) {
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (itemId == null) {
             throw new IllegalStateException("message.visiblejs.error.parse_ingredient");

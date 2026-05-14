@@ -27,12 +27,11 @@ public final class RecipeCreatorGeneratePacket {
     }
 
     public static void encode(RecipeCreatorGeneratePacket message, FriendlyByteBuf buffer) {
-        buffer.writeInt(message.recipeType.ordinal());
+        buffer.writeUtf(message.recipeType.getId());
     }
 
     public static RecipeCreatorGeneratePacket decode(FriendlyByteBuf buffer) {
-        int ordinal = buffer.readInt();
-        return new RecipeCreatorGeneratePacket(RecipeType.byOrdinal(ordinal));
+        return new RecipeCreatorGeneratePacket(RecipeType.byId(buffer.readUtf(32767)));
     }
 
     public static void handle(RecipeCreatorGeneratePacket message, Supplier<NetworkEvent.Context> contextSupplier) {
@@ -45,6 +44,11 @@ public final class RecipeCreatorGeneratePacket {
 
             if (!(player.containerMenu instanceof RecipeCreatorMenu menu)) {
                 player.sendSystemMessage(Component.literal("[VisibleJS] ").append(Component.translatable("message.visiblejs.open_gui_first")));
+                return;
+            }
+
+            if (!message.recipeType.isAvailable()) {
+                player.sendSystemMessage(Component.literal("[VisibleJS] ").append(Component.translatable("message.visiblejs.error.recipe_type_unavailable", message.recipeType.getDisplayComponent())));
                 return;
             }
 
@@ -92,6 +96,19 @@ public final class RecipeCreatorGeneratePacket {
                 return "smithing.js";
             case STONECUTTING:
                 return "stonecutting.js";
+            case CREATE_CRUSHING:
+            case CREATE_MILLING:
+            case CREATE_PRESSING:
+            case CREATE_CUTTING:
+            case CREATE_SANDPAPER_POLISHING:
+            case CREATE_HAUNTING:
+            case CREATE_SPLASHING:
+            case CREATE_EMPTYING:
+            case CREATE_WASHING:
+            case CREATE_DEPLOYING:
+            case CREATE_MIXING:
+            case CREATE_COMPACTING:
+                return "create.js";
             default:
                 return "recipes.js";
         }

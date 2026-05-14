@@ -1,46 +1,46 @@
 package com.moguang.visiblejs.client.screen;
 
-import com.moguang.visiblejs.common.recipe.RecipeType;
+import com.moguang.visiblejs.common.recipe.RecipeCategoryInfo;
 import com.moguang.visiblejs.menu.RecipeCreatorMenu;
 import com.moguang.visiblejs.network.VisibleJSNetwork;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.minecraft.world.item.ItemStack;
 
-import java.lang.reflect.Field;
+import java.util.List;
 
 public class RecipeCreatorScreen extends AbstractContainerScreen<RecipeCreatorMenu> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RecipeCreatorScreen.class);
-    
-    // Background textures
-    private static final ResourceLocation CRAFTING_TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/crafting_table.png");
-    private static final ResourceLocation FURNACE_TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/furnace.png");
-    private static final ResourceLocation BLAST_FURNACE_TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/blast_furnace.png");
-    private static final ResourceLocation SMOKER_TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/smoker.png");
-    private static final ResourceLocation SMITHING_TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/smithing.png");
-    private static final ResourceLocation STONECUTTER_TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/stonecutter.png");
-    
-    // Reflection fields for modifying Slot positions
-    private static final Field SLOT_X_FIELD;
-    private static final Field SLOT_Y_FIELD;
-    
+    private static final java.lang.reflect.Field SLOT_X_FIELD;
+    private static final java.lang.reflect.Field SLOT_Y_FIELD;
+
     static {
         try {
-            SLOT_X_FIELD = Slot.class.getDeclaredField("x");
-            SLOT_Y_FIELD = Slot.class.getDeclaredField("y");
+            SLOT_X_FIELD = Slot.class.getDeclaredField("f_40220_");
+            SLOT_Y_FIELD = Slot.class.getDeclaredField("f_40221_");
             SLOT_X_FIELD.setAccessible(true);
             SLOT_Y_FIELD.setAccessible(true);
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize reflection for Slot", e);
         }
     }
+
+    private static final int TAB_WIDTH = 22;
+    private static final int TAB_HEIGHT = 20;
+    private static final int TAB_Y_OFFSET = -18;
+    private static final int TABS_PER_PAGE = 6;
+    private static final int NAV_WIDTH = 12;
+    private static final int NAV_HEIGHT = 12;
+    private static final int TAB_START_X = 20;
+    private static final int TAB_BORDER = 0xFF171717;
+    private static final int TAB_NORMAL = 0xFF2A2F36;
+    private static final int TAB_HOVER = 0xFF3A4652;
+    private static final int TAB_SELECTED = 0xFF5C7EA3;
+
+    private int currentPage;
 
     public RecipeCreatorScreen(RecipeCreatorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -52,161 +52,210 @@ public class RecipeCreatorScreen extends AbstractContainerScreen<RecipeCreatorMe
     protected void init() {
         super.init();
 
-        // Previous type button
-        this.addRenderableWidget(Button.builder(Component.translatable("gui.visiblejs.recipe_creator.prev"), button -> {
-                    this.menu.cycleRecipeType(false);
-                    updateSlotPositions();
-                })
-                .bounds(this.leftPos + 8, this.topPos + 5, 20, 14)
-                .build());
-
-        // Next type button
-        this.addRenderableWidget(Button.builder(Component.translatable("gui.visiblejs.recipe_creator.next"), button -> {
-                    this.menu.cycleRecipeType(true);
-                    updateSlotPositions();
-                })
-                .bounds(this.leftPos + 148, this.topPos + 5, 20, 14)
-                .build());
-
         // Generate button
-        this.addRenderableWidget(Button.builder(Component.translatable("gui.visiblejs.recipe_creator.generate"), button -> VisibleJSNetwork.sendGenerateRecipeRequest(this.menu.getRecipeType()))
+        this.addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.translatable("gui.visiblejs.recipe_creator.generate"), button -> VisibleJSNetwork.sendGenerateRecipeRequest(this.menu.getRecipeType()))
                 .bounds(this.leftPos + 98, this.topPos + 59, 64, 20)
                 .build());
         
+        syncPageToSelection();
         // Initialize slot positions
         updateSlotPositions();
     }
 
-    private ResourceLocation getTextureForType(RecipeType type) {
-        switch (type) {
-            case SHAPED:
-            case SHAPELESS:
-                return CRAFTING_TEXTURE;
-            case SMELTING:
-            case CAMPFIRE_COOKING:
-                return FURNACE_TEXTURE;
-            case BLASTING:
-                return BLAST_FURNACE_TEXTURE;
-            case SMOKING:
-                return SMOKER_TEXTURE;
-            case SMITHING:
-                return SMITHING_TEXTURE;
-            case STONECUTTING:
-                return STONECUTTER_TEXTURE;
-            default:
-                return CRAFTING_TEXTURE;
+    private void syncPageToSelection() {
+        List<RecipeCategoryInfo> categories = RecipeCategoryInfo.all();
+        if (categories.isEmpty()) {
+            this.currentPage = 0;
+            return;
         }
+
+        int selectedIndex = findSelectedIndex(categories);
+        if (selectedIndex < 0) {
+            this.menu.setRecipeType(categories.get(0).recipeType());
+            selectedIndex = 0;
+        }
+
+        this.currentPage = selectedIndex / TABS_PER_PAGE;
     }
-    
+
     private void updateSlotPositions() {
-        RecipeType type = this.menu.getRecipeType();
-        
+        RecipeCategoryInfo categoryInfo = this.menu.getCategoryInfo();
+
         for (int i = 0; i < this.menu.slots.size(); i++) {
             Slot slot = this.menu.slots.get(i);
-            int[] pos = getSlotPositionForType(i, type);
-            
+            RecipeCategoryInfo.SlotPosition pos = categoryInfo.slotPosition(i);
             try {
-                SLOT_X_FIELD.set(slot, pos[0]);
-                SLOT_Y_FIELD.set(slot, pos[1]);
-            } catch (Exception e) {
-                LOGGER.error("Failed to update slot {} position", i, e);
+                SLOT_X_FIELD.set(slot, pos.x());
+                SLOT_Y_FIELD.set(slot, pos.y());
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Failed to update slot position", e);
             }
-        }
-    }
-    
-    private int[] getSlotPositionForType(int slotIndex, RecipeType type) {
-        // Player inventory slots (index 10+) stay in their original positions
-        if (slotIndex >= 10) {
-            // Return original positions for inventory slots
-            return getOriginalSlotPosition(slotIndex);
-        }
-        
-        switch (type) {
-            case SMELTING:
-            case BLASTING:
-            case SMOKING:
-            case CAMPFIRE_COOKING:
-                return getFurnaceSlotPosition(slotIndex);
-            case SMITHING:
-                return getSmithingSlotPosition(slotIndex);
-            case STONECUTTING:
-                return getStonecutterSlotPosition(slotIndex);
-            case SHAPED:
-            case SHAPELESS:
-            default:
-                return getOriginalSlotPosition(slotIndex);
-        }
-    }
-    
-    private int[] getOriginalSlotPosition(int slotIndex) {
-        switch (slotIndex) {
-            case 0: return new int[]{124, 35}; // Result
-            case 1: return new int[]{30, 17};  // Craft 0
-            case 2: return new int[]{48, 17};  // Craft 1
-            case 3: return new int[]{66, 17};  // Craft 2
-            case 4: return new int[]{30, 35};  // Craft 3
-            case 5: return new int[]{48, 35};  // Craft 4
-            case 6: return new int[]{66, 35};  // Craft 5
-            case 7: return new int[]{30, 53};  // Craft 6
-            case 8: return new int[]{48, 53};  // Craft 7
-            case 9: return new int[]{66, 53};  // Craft 8
-            default: return new int[]{slotIndex < this.menu.slots.size() ? this.menu.slots.get(slotIndex).x : 0, 
-                                     slotIndex < this.menu.slots.size() ? this.menu.slots.get(slotIndex).y : 0};
-        }
-    }
-    
-    private int[] getFurnaceSlotPosition(int slotIndex) {
-        switch (slotIndex) {
-            case 0: return new int[]{116, 35}; // Result
-            case 5: return new int[]{56, 17};  // Input (center crafting slot)
-            default: return new int[]{-9999, -9999}; // Hide other slots
-        }
-    }
-    
-    private int[] getSmithingSlotPosition(int slotIndex) {
-        switch (slotIndex) {
-            case 0: return new int[]{98, 48}; // Result
-            case 1: return new int[]{8, 48};  // Template (craft slot 0)
-            case 2: return new int[]{26, 48}; // Base (craft slot 1)
-            case 3: return new int[]{44, 48}; // Addition (craft slot 2)
-            default: return new int[]{-9999, -9999}; // Hide other slots
-        }
-    }
-    
-    private int[] getStonecutterSlotPosition(int slotIndex) {
-        switch (slotIndex) {
-            case 0: return new int[]{143, 33}; // Result
-            case 5: return new int[]{20, 33};  // Input (center crafting slot)
-            default: return new int[]{-9999, -9999}; // Hide other slots
         }
     }
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        RecipeType type = this.menu.getRecipeType();
-        graphics.blit(getTextureForType(type), this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+        RecipeCategoryInfo categoryInfo = this.menu.getCategoryInfo();
+        graphics.blit(categoryInfo.backgroundTexture(), this.leftPos, this.topPos, 0, 0, categoryInfo.backgroundWidth(), categoryInfo.backgroundHeight());
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        RecipeType type = this.menu.getRecipeType();
-        Component typeName = type.getDisplayComponent();
+        RecipeCategoryInfo categoryInfo = this.menu.getCategoryInfo();
+        Component typeName = categoryInfo.title();
         int textWidth = this.font.width(typeName);
         int textX = (this.imageWidth - textWidth) / 2;
         graphics.drawString(this.font, typeName, textX, 6, 0x404040, false);
 
         graphics.drawString(this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, 0x404040, false);
     }
-    
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        renderTabs(graphics, mouseX, mouseY);
+        renderHoveredTabTooltip(graphics, mouseX, mouseY);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        if (mouseButton == 0 && handlePageClick(mouseX, mouseY)) {
+            return true;
+        }
+        if (mouseButton == 0 && handleTabClick(mouseX, mouseY)) {
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, mouseButton);
+    }
+
+    private void renderTabs(GuiGraphics graphics, int mouseX, int mouseY) {
+        List<RecipeCategoryInfo> categories = RecipeCategoryInfo.all();
+        int pageCount = getPageCount(categories);
+        this.currentPage = Math.min(this.currentPage, Math.max(pageCount - 1, 0));
+
+        int tabY = this.topPos + TAB_Y_OFFSET;
+        int navY = tabY + 4;
+        int leftNavX = this.leftPos + 4;
+        int rightNavX = this.leftPos + this.imageWidth - NAV_WIDTH - 4;
+
+        renderNavButton(graphics, leftNavX, navY, mouseX, mouseY, pageCount > 1, "<");
+        renderNavButton(graphics, rightNavX, navY, mouseX, mouseY, pageCount > 1, ">");
+
+        int startIndex = this.currentPage * TABS_PER_PAGE;
+        int endIndex = Math.min(startIndex + TABS_PER_PAGE, categories.size());
+
+        for (int index = startIndex; index < endIndex; ++index) {
+            RecipeCategoryInfo categoryInfo = categories.get(index);
+            int tabX = this.leftPos + TAB_START_X + (index - startIndex) * TAB_WIDTH;
+            boolean selected = categoryInfo.recipeType() == this.menu.getRecipeType();
+            boolean hovered = isMouseOverTab(tabX, tabY, mouseX, mouseY);
+
+            graphics.fill(tabX, tabY, tabX + TAB_WIDTH, tabY + TAB_HEIGHT, TAB_BORDER);
+            graphics.fill(tabX + 1, tabY + 1, tabX + TAB_WIDTH - 1, tabY + TAB_HEIGHT - 1, selected ? TAB_SELECTED : hovered ? TAB_HOVER : TAB_NORMAL);
+
+            ItemStack icon = categoryInfo.icon();
+            graphics.renderItem(icon, tabX + 3, tabY + 2);
+
+            if (selected) {
+                graphics.fill(tabX + 2, tabY + TAB_HEIGHT - 2, tabX + TAB_WIDTH - 2, tabY + TAB_HEIGHT - 1, 0xFFFFFFFF);
+            }
+        }
+    }
+
+    private void renderHoveredTabTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+        RecipeCategoryInfo hovered = getHoveredTab(mouseX, mouseY);
+        if (hovered != null) {
+            graphics.renderTooltip(this.font, hovered.title(), mouseX, mouseY);
+        }
+    }
+
+    private void renderNavButton(GuiGraphics graphics, int x, int y, int mouseX, int mouseY, boolean enabled, String label) {
+        boolean hovered = enabled && mouseX >= x && mouseX < x + NAV_WIDTH && mouseY >= y && mouseY < y + NAV_HEIGHT;
+        int background = enabled ? (hovered ? TAB_HOVER : TAB_NORMAL) : 0xFF1B1B1B;
+        graphics.fill(x, y, x + NAV_WIDTH, y + NAV_HEIGHT, TAB_BORDER);
+        graphics.fill(x + 1, y + 1, x + NAV_WIDTH - 1, y + NAV_HEIGHT - 1, background);
+        graphics.drawCenteredString(this.font, label, x + NAV_WIDTH / 2, y + 2, enabled ? 0xFFFFFF : 0x777777);
+    }
+
+    private boolean handlePageClick(double mouseX, double mouseY) {
+        List<RecipeCategoryInfo> categories = RecipeCategoryInfo.all();
+        int pageCount = getPageCount(categories);
+        if (pageCount <= 1) {
+            return false;
+        }
+
+        int tabY = this.topPos + TAB_Y_OFFSET + 4;
+        int leftNavX = this.leftPos + 4;
+        int rightNavX = this.leftPos + this.imageWidth - NAV_WIDTH - 4;
+
+        if (isMouseOverArrow(leftNavX, tabY, mouseX, mouseY)) {
+            this.currentPage = (this.currentPage - 1 + pageCount) % pageCount;
+            return true;
+        }
+
+        if (isMouseOverArrow(rightNavX, tabY, mouseX, mouseY)) {
+            this.currentPage = (this.currentPage + 1) % pageCount;
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean handleTabClick(double mouseX, double mouseY) {
+        RecipeCategoryInfo hovered = getHoveredTab(mouseX, mouseY);
+        if (hovered == null) {
+            return false;
+        }
+
+        this.menu.setRecipeType(hovered.recipeType());
+        syncPageToSelection();
+        updateSlotPositions();
+        return true;
+    }
+
+    private RecipeCategoryInfo getHoveredTab(double mouseX, double mouseY) {
+        List<RecipeCategoryInfo> categories = RecipeCategoryInfo.all();
+        int tabY = this.topPos + TAB_Y_OFFSET;
+        int startIndex = this.currentPage * TABS_PER_PAGE;
+        int endIndex = Math.min(startIndex + TABS_PER_PAGE, categories.size());
+
+        for (int index = startIndex; index < endIndex; ++index) {
+            int tabX = this.leftPos + TAB_START_X + (index - startIndex) * TAB_WIDTH;
+            if (isMouseOverTab(tabX, tabY, mouseX, mouseY)) {
+                return categories.get(index);
+            }
+        }
+
+        return null;
+    }
+
+    private int findSelectedIndex(List<RecipeCategoryInfo> categories) {
+        for (int index = 0; index < categories.size(); ++index) {
+            if (categories.get(index).recipeType() == this.menu.getRecipeType()) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    private int getPageCount(List<RecipeCategoryInfo> categories) {
+        return Math.max(1, (categories.size() + TABS_PER_PAGE - 1) / TABS_PER_PAGE);
+    }
+
+    private boolean isMouseOverTab(int tabX, int tabY, double mouseX, double mouseY) {
+        return mouseX >= tabX && mouseX < tabX + TAB_WIDTH && mouseY >= tabY && mouseY < tabY + TAB_HEIGHT;
+    }
+
+    private boolean isMouseOverArrow(int tabX, int tabY, double mouseX, double mouseY) {
+        return mouseX >= tabX && mouseX < tabX + NAV_WIDTH && mouseY >= tabY && mouseY < tabY + NAV_HEIGHT;
+    }
+
     @Override
     protected void slotClicked(Slot slot, int slotId, int mouseButton, ClickType type) {
-        if (slot != null) {
-            int slotIndex = this.menu.slots.indexOf(slot);
-            RecipeType recipeType = this.menu.getRecipeType();
-            int[] pos = getSlotPositionForType(slotIndex, recipeType);
-            if (pos[0] < 0 || pos[1] < 0) {
-                return; // Ignore clicks on hidden slots
-            }
+        int slotIndex = this.menu.slots.indexOf(slot);
+        RecipeCategoryInfo categoryInfo = this.menu.getCategoryInfo();
+        if (!categoryInfo.isSlotVisible(slotIndex)) {
+            return; // Ignore clicks on hidden slots
         }
         super.slotClicked(slot, slotId, mouseButton, type);
     }

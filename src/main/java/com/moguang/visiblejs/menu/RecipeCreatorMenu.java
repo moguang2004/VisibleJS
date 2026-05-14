@@ -1,6 +1,7 @@
 package com.moguang.visiblejs.menu;
 
 import com.moguang.visiblejs.VisibleMenuTypes;
+import com.moguang.visiblejs.common.recipe.RecipeCategoryInfo;
 import com.moguang.visiblejs.common.recipe.RecipeType;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -20,6 +21,7 @@ public class RecipeCreatorMenu extends AbstractContainerMenu {
     private final ResultContainer resultSlots = new ResultContainer();
     private final Player player;
     private RecipeType recipeType = RecipeType.SHAPED;
+    private RecipeCategoryInfo categoryInfo = RecipeCategoryInfo.of(recipeType);
 
     public RecipeCreatorMenu(int containerId, Inventory playerInventory) {
         super(VisibleMenuTypes.RECIPE_CREATOR_MENU.get(), containerId);
@@ -53,20 +55,34 @@ public class RecipeCreatorMenu extends AbstractContainerMenu {
         return recipeType;
     }
 
+    public RecipeCategoryInfo getCategoryInfo() {
+        return categoryInfo;
+    }
+
     public void setRecipeType(RecipeType type) {
-        this.recipeType = type;
+        this.recipeType = type != null && type.isAvailable() ? type : RecipeType.firstVisible();
+        this.categoryInfo = RecipeCategoryInfo.of(this.recipeType);
     }
 
     public void cycleRecipeType(boolean forward) {
-        RecipeType[] values = RecipeType.values();
-        int currentIndex = recipeType.ordinal();
+        List<RecipeType> values = RecipeType.visibleValues();
+        if (values.isEmpty()) {
+            setRecipeType(RecipeType.SHAPED);
+            return;
+        }
+
+        int currentIndex = values.indexOf(this.recipeType);
+        if (currentIndex < 0) {
+            currentIndex = 0;
+        }
+
         int newIndex;
         if (forward) {
-            newIndex = (currentIndex + 1) % values.length;
+            newIndex = (currentIndex + 1) % values.size();
         } else {
-            newIndex = (currentIndex - 1 + values.length) % values.length;
+            newIndex = (currentIndex - 1 + values.size()) % values.size();
         }
-        this.recipeType = values[newIndex];
+        setRecipeType(values.get(newIndex));
     }
 
     public ItemStack getResultStack() {

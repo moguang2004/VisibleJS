@@ -6,8 +6,8 @@ VisibleJS is a Minecraft Forge mod that provides an interactive recipe creation 
 
 ## Features
 
-- **8 Recipe Types Supported**: Shaped/Shapeless Crafting, Smelting, Blasting, Smoking, Campfire Cooking, Smithing, Stonecutting
-- **Vanilla UI Experience**: Each recipe type uses the corresponding vanilla Minecraft UI texture for intuitive operation
+- **Multiple Recipe Families Supported**: Vanilla crafting/furnace recipes plus common Create recipe types
+- **JEI-style Top Category Bar**: Switch recipe types with left/right paging and hover tooltips
 - **One-Click Script Generation**: Fill in items and click the button to automatically generate standard KubeJS recipe code
 - **Automatic File Management**: Generated scripts are automatically saved to the corresponding category files under `kubejs/server_scripts/`
 - **Real-Time Recipe Preview**: View generated script content instantly in-game
@@ -16,7 +16,7 @@ VisibleJS is a Minecraft Forge mod that provides an interactive recipe creation 
 
 1. Obtain the **recipe_creator** tool from the Creative Mode inventory
 2. Right-click with the tool to open the Recipe Editor
-3. Use the **< >** buttons at the top to switch recipe types
+3. Use the **top category bar** and its **left/right page arrows** to switch recipe types
 4. Place input materials and output items following vanilla conventions
 5. Click the **"Generate Script"** button
 6. Scripts will be automatically saved to the corresponding file and displayed in the chat
@@ -33,12 +33,25 @@ VisibleJS is a Minecraft Forge mod that provides an interactive recipe creation 
 | Campfire Cooking | `smelting.js` | Campfire slow cooking |
 | Smithing | `smithing.js` | 1.20+ smithing recipe |
 | Stonecutting | `stonecutting.js` | Stonecutter processing recipe |
+| Create Crushing / Milling / Pressing / Cutting / Sandpaper Polishing / Haunting | `create.js` | Visible when Create is installed |
+| Create Mixing / Compacting | `create.js` | 3x3 input grid |
+| Create Deploying | `create.js` | Dual-input recipe |
 
 ## Requirements
 
 - Minecraft **1.20.1**
 - Forge **47.3.10+**
 - KubeJS **2001.6.5+** (Optional but recommended for testing generated scripts)
+
+### Testing Create Script Generation Without Create Installed
+
+You can still verify Create script output locally even if you do **not** install Create:
+
+```powershell
+.\gradlew.bat test
+```
+
+The project includes pure string preview tests, so no Create runtime is required to validate the generated `create.js` syntax.
 
 ## Generation Examples
 
