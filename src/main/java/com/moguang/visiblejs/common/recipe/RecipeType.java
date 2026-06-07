@@ -1,7 +1,7 @@
 package com.moguang.visiblejs.common.recipe;
 
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.fml.ModList;
+import net.neoforged.fml.ModList;
 
 import java.util.Arrays;
 import java.util.List;

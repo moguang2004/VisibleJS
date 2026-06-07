@@ -1,10 +1,10 @@
 package com.moguang.visiblejs.common.script;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import com.moguang.visiblejs.common.recipe.RecipeType;
 import com.moguang.visiblejs.menu.RecipeCreatorMenu;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -296,7 +296,7 @@ public final class RecipeScriptGenerator {
     }
 
     private static String buildResultExpression(ItemStack stack) {
-        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
         if (itemId == null) {
             throw new IllegalStateException("message.visiblejs.error.parse_result");
         }
@@ -307,7 +307,7 @@ public final class RecipeScriptGenerator {
     }
 
     private static String buildIngredientExpression(ItemStack stack) {
-        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
         if (itemId == null) {
             throw new IllegalStateException("message.visiblejs.error.parse_ingredient");
         }
@@ -315,7 +315,7 @@ public final class RecipeScriptGenerator {
     }
 
     private static String getIngredientKey(ItemStack stack) {
-        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
         if (itemId == null) {
             throw new IllegalStateException("message.visiblejs.error.parse_ingredient");
         }
@@ -323,7 +323,7 @@ public final class RecipeScriptGenerator {
     }
 
     private static String toItemId(ItemStack stack) {
-        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
         if (itemId == null) {
             throw new IllegalStateException("message.visiblejs.error.parse_ingredient");
         }

@@ -2,6 +2,7 @@ package com.moguang.visiblejs.client.screen;
 
 import com.moguang.visiblejs.common.recipe.RecipeCategoryInfo;
 import com.moguang.visiblejs.menu.RecipeCreatorMenu;
+import com.moguang.visiblejs.mixin.accessor.SlotAccessor;
 import com.moguang.visiblejs.network.VisibleJSNetwork;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -14,20 +15,6 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 
 public class RecipeCreatorScreen extends AbstractContainerScreen<RecipeCreatorMenu> {
-    private static final java.lang.reflect.Field SLOT_X_FIELD;
-    private static final java.lang.reflect.Field SLOT_Y_FIELD;
-
-    static {
-        try {
-            SLOT_X_FIELD = Slot.class.getDeclaredField("f_40220_");
-            SLOT_Y_FIELD = Slot.class.getDeclaredField("f_40221_");
-            SLOT_X_FIELD.setAccessible(true);
-            SLOT_Y_FIELD.setAccessible(true);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize reflection for Slot", e);
-        }
-    }
-
     private static final int TAB_WIDTH = 22;
     private static final int TAB_HEIGHT = 20;
     private static final int TAB_Y_OFFSET = -18;
@@ -84,12 +71,9 @@ public class RecipeCreatorScreen extends AbstractContainerScreen<RecipeCreatorMe
         for (int i = 0; i < this.menu.slots.size(); i++) {
             Slot slot = this.menu.slots.get(i);
             RecipeCategoryInfo.SlotPosition pos = categoryInfo.slotPosition(i);
-            try {
-                SLOT_X_FIELD.set(slot, pos.x());
-                SLOT_Y_FIELD.set(slot, pos.y());
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException("Failed to update slot position", e);
-            }
+            SlotAccessor accessor = (SlotAccessor) slot;
+            accessor.visiblejs$setX(pos.x());
+            accessor.visiblejs$setY(pos.y());
         }
     }
 

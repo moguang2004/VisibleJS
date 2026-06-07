@@ -1,10 +1,13 @@
 package com.moguang.visiblejs.common.recipe;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.neoforged.fml.ModList;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -12,12 +15,12 @@ import java.util.List;
 import java.util.Map;
 
 public final class RecipeCategoryInfo {
-    private static final ResourceLocation CRAFTING_TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/crafting_table.png");
-    private static final ResourceLocation FURNACE_TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/furnace.png");
-    private static final ResourceLocation BLAST_FURNACE_TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/blast_furnace.png");
-    private static final ResourceLocation SMOKER_TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/smoker.png");
-    private static final ResourceLocation SMITHING_TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/smithing.png");
-    private static final ResourceLocation STONECUTTER_TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/stonecutter.png");
+    private static final ResourceLocation CRAFTING_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/container/crafting_table.png");
+    private static final ResourceLocation FURNACE_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/container/furnace.png");
+    private static final ResourceLocation BLAST_FURNACE_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/container/blast_furnace.png");
+    private static final ResourceLocation SMOKER_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/container/smoker.png");
+    private static final ResourceLocation SMITHING_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/container/smithing.png");
+    private static final ResourceLocation STONECUTTER_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/container/stonecutter.png");
     private static final ResourceLocation CREATE_SINGLE_TEXTURE = FURNACE_TEXTURE;
     private static final ResourceLocation CREATE_MULTI_TEXTURE = CRAFTING_TEXTURE;
     private static final ResourceLocation CREATE_DEPLOY_TEXTURE = SMITHING_TEXTURE;
@@ -33,18 +36,41 @@ public final class RecipeCategoryInfo {
         CACHE.put(RecipeType.CAMPFIRE_COOKING, new RecipeCategoryInfo(RecipeType.CAMPFIRE_COOKING, new ItemStack(Items.CAMPFIRE), FURNACE_TEXTURE, 176, 166));
         CACHE.put(RecipeType.SMITHING, new RecipeCategoryInfo(RecipeType.SMITHING, new ItemStack(Blocks.SMITHING_TABLE), SMITHING_TEXTURE, 176, 166));
         CACHE.put(RecipeType.STONECUTTING, new RecipeCategoryInfo(RecipeType.STONECUTTING, new ItemStack(Blocks.STONECUTTER), STONECUTTER_TEXTURE, 176, 166));
-        CACHE.put(RecipeType.CREATE_CRUSHING, new RecipeCategoryInfo(RecipeType.CREATE_CRUSHING, new ItemStack(Blocks.COBBLESTONE), CREATE_SINGLE_TEXTURE, 176, 166));
-        CACHE.put(RecipeType.CREATE_MILLING, new RecipeCategoryInfo(RecipeType.CREATE_MILLING, new ItemStack(Items.WHEAT), CREATE_SINGLE_TEXTURE, 176, 166));
-        CACHE.put(RecipeType.CREATE_PRESSING, new RecipeCategoryInfo(RecipeType.CREATE_PRESSING, new ItemStack(Items.IRON_INGOT), CREATE_SINGLE_TEXTURE, 176, 166));
-        CACHE.put(RecipeType.CREATE_CUTTING, new RecipeCategoryInfo(RecipeType.CREATE_CUTTING, new ItemStack(Items.SHEARS), CREATE_SINGLE_TEXTURE, 176, 166));
-        CACHE.put(RecipeType.CREATE_SANDPAPER_POLISHING, new RecipeCategoryInfo(RecipeType.CREATE_SANDPAPER_POLISHING, new ItemStack(Items.PAPER), CREATE_SINGLE_TEXTURE, 176, 166));
-        CACHE.put(RecipeType.CREATE_HAUNTING, new RecipeCategoryInfo(RecipeType.CREATE_HAUNTING, new ItemStack(Items.ECHO_SHARD), CREATE_SINGLE_TEXTURE, 176, 166));
-        CACHE.put(RecipeType.CREATE_SPLASHING, new RecipeCategoryInfo(RecipeType.CREATE_SPLASHING, new ItemStack(Items.SPLASH_POTION), CREATE_SINGLE_TEXTURE, 176, 166));
-        CACHE.put(RecipeType.CREATE_EMPTYING, new RecipeCategoryInfo(RecipeType.CREATE_EMPTYING, new ItemStack(Items.BUCKET), CREATE_SINGLE_TEXTURE, 176, 166));
-        CACHE.put(RecipeType.CREATE_WASHING, new RecipeCategoryInfo(RecipeType.CREATE_WASHING, new ItemStack(Items.WATER_BUCKET), CREATE_SINGLE_TEXTURE, 176, 166));
-        CACHE.put(RecipeType.CREATE_DEPLOYING, new RecipeCategoryInfo(RecipeType.CREATE_DEPLOYING, new ItemStack(Items.DISPENSER), CREATE_DEPLOY_TEXTURE, 176, 166));
-        CACHE.put(RecipeType.CREATE_MIXING, new RecipeCategoryInfo(RecipeType.CREATE_MIXING, new ItemStack(Items.BOWL), CREATE_MULTI_TEXTURE, 176, 166));
-        CACHE.put(RecipeType.CREATE_COMPACTING, new RecipeCategoryInfo(RecipeType.CREATE_COMPACTING, new ItemStack(Blocks.HONEY_BLOCK), CREATE_MULTI_TEXTURE, 176, 166));
+        
+        // Create mod recipe types - use Create items as icons when available
+        boolean createLoaded = ModList.get().isLoaded("create");
+        CACHE.put(RecipeType.CREATE_CRUSHING, new RecipeCategoryInfo(RecipeType.CREATE_CRUSHING, 
+            createLoaded ? getCreateItem("crushing_wheel") : new ItemStack(Blocks.COBBLESTONE), CREATE_SINGLE_TEXTURE, 176, 166));
+        CACHE.put(RecipeType.CREATE_MILLING, new RecipeCategoryInfo(RecipeType.CREATE_MILLING, 
+            createLoaded ? getCreateItem("millstone") : new ItemStack(Items.WHEAT), CREATE_SINGLE_TEXTURE, 176, 166));
+        CACHE.put(RecipeType.CREATE_PRESSING, new RecipeCategoryInfo(RecipeType.CREATE_PRESSING, 
+            createLoaded ? getCreateItem("mechanical_press") : new ItemStack(Items.IRON_INGOT), CREATE_SINGLE_TEXTURE, 176, 166));
+        CACHE.put(RecipeType.CREATE_CUTTING, new RecipeCategoryInfo(RecipeType.CREATE_CUTTING, 
+            createLoaded ? getCreateItem("mechanical_saw") : new ItemStack(Items.SHEARS), CREATE_SINGLE_TEXTURE, 176, 166));
+        CACHE.put(RecipeType.CREATE_SANDPAPER_POLISHING, new RecipeCategoryInfo(RecipeType.CREATE_SANDPAPER_POLISHING, 
+            createLoaded ? getCreateItem("sand_paper") : new ItemStack(Items.PAPER), CREATE_SINGLE_TEXTURE, 176, 166));
+        CACHE.put(RecipeType.CREATE_HAUNTING, new RecipeCategoryInfo(RecipeType.CREATE_HAUNTING, 
+            createLoaded ? getCreateItem("encased_fan") : new ItemStack(Items.ECHO_SHARD), CREATE_SINGLE_TEXTURE, 176, 166));
+        CACHE.put(RecipeType.CREATE_SPLASHING, new RecipeCategoryInfo(RecipeType.CREATE_SPLASHING, 
+            createLoaded ? getCreateItem("encased_fan") : new ItemStack(Items.SPLASH_POTION), CREATE_SINGLE_TEXTURE, 176, 166));
+        CACHE.put(RecipeType.CREATE_EMPTYING, new RecipeCategoryInfo(RecipeType.CREATE_EMPTYING, 
+            createLoaded ? getCreateItem("item_drain") : new ItemStack(Items.BUCKET), CREATE_SINGLE_TEXTURE, 176, 166));
+        CACHE.put(RecipeType.CREATE_WASHING, new RecipeCategoryInfo(RecipeType.CREATE_WASHING, 
+            createLoaded ? getCreateItem("encased_fan") : new ItemStack(Items.WATER_BUCKET), CREATE_SINGLE_TEXTURE, 176, 166));
+        CACHE.put(RecipeType.CREATE_DEPLOYING, new RecipeCategoryInfo(RecipeType.CREATE_DEPLOYING, 
+            createLoaded ? getCreateItem("deployer") : new ItemStack(Items.DISPENSER), CREATE_DEPLOY_TEXTURE, 176, 166));
+        CACHE.put(RecipeType.CREATE_MIXING, new RecipeCategoryInfo(RecipeType.CREATE_MIXING, 
+            createLoaded ? getCreateItem("mechanical_mixer") : new ItemStack(Items.BOWL), CREATE_MULTI_TEXTURE, 176, 166));
+        CACHE.put(RecipeType.CREATE_COMPACTING, new RecipeCategoryInfo(RecipeType.CREATE_COMPACTING, 
+            createLoaded ? getCreateItem("mechanical_press") : new ItemStack(Blocks.HONEY_BLOCK), CREATE_MULTI_TEXTURE, 176, 166));
+    }
+    
+    private static ItemStack getCreateItem(String itemName) {
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("create", itemName));
+        if (item == Items.AIR) {
+            return new ItemStack(Items.BARRIER);
+        }
+        return new ItemStack(item);
     }
 
     public record SlotPosition(int x, int y) {

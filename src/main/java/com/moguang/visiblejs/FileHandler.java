@@ -1,6 +1,6 @@
 package com.moguang.visiblejs;
 
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.nio.file.Path;
 

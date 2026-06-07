@@ -1,6 +1,6 @@
 package com.moguang.visiblejs;
 
-import dev.latvian.mods.kubejs.KubeJSPlugin;
+import dev.latvian.mods.kubejs.plugin.KubeJSPlugin;
 
-public class VisibleJSPlugin extends KubeJSPlugin {
+public class VisibleJSPlugin implements KubeJSPlugin {
 }
